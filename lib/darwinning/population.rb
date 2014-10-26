@@ -107,7 +107,7 @@ module Darwinning
 
     def evolution_over?
       # check if the fitness goal or generation limit has been met
-      log{"Generation: #{@genertion} of #{@generation_limit}"}
+      log{"Generation: #{@generation} of #{@generations_limit}"}
       if @generations_limit > 0
         @generation == @generations_limit || best_member.fitness == @fitness_goal
       else 
