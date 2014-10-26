@@ -1,9 +1,10 @@
 module Darwinning
 
   class Population
-    attr_accessor :members, :mutation_rate, :generations_limit, :fitness_goal, :organism, :generation
+    attr_accessor :members, :mutation_rate, :generations_limit, :fitness_goal, :organism, :generation, :logger
 
     def initialize(organism, population_size, fitness_goal, mutation_rate = 0.0, generations_limit = 0, manual_fitness = false)
+      @logging = {}
       @organism = organism
       @fitness_goal = fitness_goal
       @mutation_rate = mutation_rate
@@ -105,20 +106,40 @@ module Darwinning
     end
 
     def evolution_over?
-      # check if the fiteness goal or generation limit has been met
+      # check if the fitness goal or generation limit has been met
+      log{"Generation: #{@genertion} of #{@generation_limit}"}
       if @generations_limit > 0
-        @generation == @generations_limit or best_member.fitness == @fitness_goal
+        @generation == @generations_limit || best_member.fitness == @fitness_goal
       else 
-        @generation == @generations_limit or best_member.fitness == @fitness_goal
+        @generation == @generations_limit || best_member.fitness == @fitness_goal
       end
     end
 
     def best_member
-      @members.sort_by { |m| m.fitness }[0]
+      @members.sort_by { |m| (m.fitness - @fitness_goal).abs }[0]
     end
 
     def size
       @members.length
+    end
+
+    private
+
+    #helper method to allow for integrated logging and blocks to speed up evaluation
+    def log(msg=nil, level=:debug, &block)
+
+      if @logging[level].present?
+        (msg.nil? && block_given?) ? logger.send(level, yield) : logger.send(level, msg)
+      end
+
+      if logger.present?
+        if logger.respond_to?(level)
+          @logging[level] = true
+          (msg.nil? && block_given?) ? logger.send(level, yield) : logger.send(level, msg)
+        else
+          puts msg
+        end
+      end
     end
   end
 end
